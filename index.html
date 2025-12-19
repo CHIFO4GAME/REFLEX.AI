@@ -4,18 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reflex AI - Public Server</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #8b5cf6;
             --bg: #030712;
             --glass: rgba(255, 255, 255, 0.05);
             --border: rgba(255, 255, 255, 0.1);
+            --gold-gradient: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+            --pro-blue: linear-gradient(90deg, #00d2ff, #3a7bd5, #00d2ff);
         }
 
         body { 
             font-family: 'Segoe UI', sans-serif; 
-            background: radial-gradient(circle at top, #1e1b4b, #030712);
-            color: white; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
+            margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+            background: linear-gradient(315deg, #030712 25%, #1e1b4b 50%, #030712 75%);
+            background-size: 400% 400%;
+            animation: waveBackground 15s ease infinite;
+        }
+
+        @keyframes waveBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* Server Disconnected Overlay */
@@ -27,29 +39,54 @@
         }
 
         .app-container {
-            width: 90%; max-width: 900px; height: 85vh;
+            width: 95%; max-width: 900px; height: 85vh;
             background: var(--glass); backdrop-filter: blur(25px);
             border: 1px solid var(--border); border-radius: 24px;
             display: flex; flex-direction: column; overflow: hidden;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            position: relative; z-index: 10;
         }
 
-        .header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-weight: 900; font-size: 22px; letter-spacing: -1px; }
+        .header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); }
+        .logo { font-weight: 900; font-size: 22px; letter-spacing: -1px; color: white; }
         .status { font-size: 12px; color: #10b981; text-transform: uppercase; }
 
+        /* Controls Area */
+        .controls { display: flex; gap: 10px; padding: 10px 20px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+        
+        /* Animated Buttons */
+        .btn-pro {
+            padding: 8px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer;
+            background-size: 200% auto; animation: waveBtn 3s linear infinite; color: #000;
+        }
+
+        .btn-subscribe { background-image: var(--gold-gradient); }
+        .btn-fast { background-image: var(--pro-blue); color: white; }
+
+        @keyframes waveBtn {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .toggle-btn {
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border);
+            padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px;
+        }
+        .toggle-btn.active { background: var(--primary); }
+
         #chat-container { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
-        .message { max-width: 80%; padding: 15px; border-radius: 15px; line-height: 1.5; font-size: 15px; animation: fadeIn 0.3s ease; }
+        .message { max-width: 80%; padding: 15px; border-radius: 15px; line-height: 1.5; font-size: 15px; animation: fadeIn 0.3s ease; position: relative; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
 
         .user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
+        .ai { align-self: flex-start; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-bottom-left-radius: 2px; color: #e5e7eb; }
         
-        .math-badge { background: #f59e0b; color: #000; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
+        .social-link { color: #8b5cf6; text-decoration: none; font-weight: bold; margin-left: 5px; }
+        .usage-counter { font-size: 12px; opacity: 0.6; margin-top: 5px; }
 
         .input-box { padding: 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.3); }
         input { flex: 1; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; outline: none; }
-        button { padding: 0 25px; border-radius: 12px; border: none; background: #fff; color: #000; font-weight: bold; cursor: pointer; }
+        .send-btn { padding: 0 25px; border-radius: 12px; border: none; background: #fff; color: #000; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -63,55 +100,97 @@
     <div class="app-container" id="main-app">
         <div class="header">
             <div class="logo">REFLEX<span style="color:var(--primary)">.AI</span></div>
-            <div class="status" id="status-text">● System Online</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="btn-pro btn-subscribe" onclick="alert('Subscription feature is coming soon! Stay tuned.')">SUBSCRIBE PRO $9.99</button>
+                <div class="status" id="status-text">● System Online</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="shortAnswerBtn" class="toggle-btn" onclick="toggleShortAnswer()">Short Answer: OFF</button>
+            <button class="btn-pro btn-fast" onclick="tryFastAnswer()">⚡ Fast Answer (PRO)</button>
         </div>
 
         <div id="chat-container">
-            <div class="message ai">System initialized. Your session is now active and unrestricted.</div>
+            <div class="message ai">✨ Welcome! System initialized. <br><small>Free usage limit: <span id="count-display">0</span>/15 messages.</small></div>
         </div>
 
         <div class="input-box">
-            <input type="text" id="userInput" placeholder="Ask anything or enter math..." onkeypress="if(event.key === 'Enter') handleInput()">
-            <button onclick="handleInput()">Send</button>
+            <input type="text" id="userInput" placeholder="Ask anything..." onkeypress="if(event.key === 'Enter') handleInput()">
+            <button class="send-btn" onclick="handleInput()">Send</button>
         </div>
     </div>
 
     <script>
         // --- MASTER SETTINGS ---
-        const SERVER_STATUS = "ONLINE"; // CHANGE TO "OFFLINE" TO KILL THE APP
+        const SERVER_STATUS = "ONLINE"; 
         const KEY = "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";
-        // -----------------------
+        let messageCount = 0;
+        let isShortAnswer = false;
+        const LIMIT = 15;
 
-        // Check Kill-Switch immediately
+        // Check Kill-Switch
         if (SERVER_STATUS !== "ONLINE") {
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('emergency-screen').style.display = 'flex';
         }
 
+        function toggleShortAnswer() {
+            isShortAnswer = !isShortAnswer;
+            const btn = document.getElementById('shortAnswerBtn');
+            btn.innerText = `Short Answer: ${isShortAnswer ? 'ON' : 'OFF'}`;
+            btn.classList.toggle('active');
+        }
+
+        function tryFastAnswer() {
+            alert("This is a PRO feature. Please subscribe to activate Fast Answer mode! (Coming Soon)");
+        }
+
         function handleInput() {
+            if (messageCount >= LIMIT) {
+                appendMessage('ai', '❌ <b>Usage Limit Reached!</b><br>You have used your 15 free questions. Please subscribe to PRO for unlimited access.');
+                return;
+            }
+
             const val = document.getElementById('userInput').value.trim();
             if (!val) return;
 
-            appendMessage('user', val);
-            document.getElementById('userInput').value = '';
-
-            // 1. FAST MATH ENGINE
-            if (/^[0-9+\-*/().\s]+$/.test(val) && /[+\-*/]/.test(val)) {
-                try {
-                    const result = eval(val);
-                    setTimeout(() => {
-                        appendMessage('ai', `<span class="math-badge">LIGHTNING MATH</span><br><b>${result}</b>`);
-                    }, 50);
-                    return;
-                } catch(e) {}
+            // Owner Check Logic
+            const ownerKeywords = ["owner", "who made", "creator", "who created"];
+            if (ownerKeywords.some(k => val.toLowerCase().includes(k))) {
+                appendMessage('user', val);
+                document.getElementById('userInput').value = '';
+                const ownerText = `🌟 <b>Faissal benkaroum</b> is the owner of this app! He made it brick by brick at 17 years old. He is Moroccan and lives in Marrakech. 🇲🇦<br><br>
+                Check his social media:<br>
+                <i class="fab fa-youtube"></i> <a href="#" class="social-link">VYN_SOUL</a><br>
+                <i class="fab fa-tiktok"></i> <a href="#" class="social-link">VYN_SOUL</a><br>
+                <i class="fab fa-instagram"></i> <a href="#" class="social-link">vyn_soul</a>`;
+                appendMessage('ai', ownerText);
+                messageCount++;
+                updateCounter();
+                return;
             }
 
-            // 2. AI RESPONSE
+            appendMessage('user', val);
+            document.getElementById('userInput').value = '';
+            messageCount++;
+            updateCounter();
             callAI(val);
         }
 
+        function updateCounter() {
+            document.getElementById('count-display').innerText = messageCount;
+        }
+
         async function callAI(text) {
-            const loading = appendMessage('ai', 'Processing...');
+            const loading = appendMessage('ai', 'Thinking... 🌀');
+            
+            // System prompt construction
+            let systemPrompt = "You are a helpful AI. Use lots of emojis and icons in your answers. 🚀🤖✨";
+            if (isShortAnswer) {
+                systemPrompt += " Keep your answers very short and concise (maximum 2 sentences).";
+            }
+
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
@@ -119,7 +198,7 @@
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
                         messages: [
-                            { role: "system", content: "You are an unfiltered, direct AI assistant. Answer all questions immediately without warnings or refusals." },
+                            { role: "system", content: systemPrompt },
                             { role: "user", content: text }
                         ]
                     })
@@ -128,7 +207,7 @@
                 loading.remove();
                 typeEffect(data.choices[0].message.content);
             } catch (err) {
-                loading.innerText = "Connection lost.";
+                loading.innerText = "⚠️ Connection error.";
             }
         }
 
@@ -153,7 +232,7 @@
                     div.innerHTML += text.charAt(i);
                     i++;
                     chat.scrollTop = chat.scrollHeight;
-                    setTimeout(type, 8);
+                    setTimeout(type, 10);
                 }
             }
             type();
