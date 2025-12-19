@@ -18,7 +18,6 @@
             color: white; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
         }
 
-        /* Server Disconnected Overlay */
         #emergency-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; color: #ff4444; z-index: 9999;
@@ -41,11 +40,12 @@
         .owner-tag {
             font-size: 10px;
             background: rgba(139, 92, 246, 0.2);
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             border: 1px solid var(--primary);
             color: #d8b4fe;
             font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         #chat-container { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
@@ -57,9 +57,21 @@
         
         .math-badge { background: #f59e0b; color: #000; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
 
-        .input-box { padding: 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.3); }
-        input { flex: 1; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; outline: none; }
-        button { padding: 0 25px; border-radius: 12px; border: none; background: #fff; color: #000; font-weight: bold; cursor: pointer; }
+        .input-box { padding: 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border); }
+        input { flex: 1; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; outline: none; font-size: 14px; }
+        input:focus { border-color: var(--primary); }
+
+        .send-btn { 
+            padding: 0 30px; 
+            border-radius: 12px; 
+            border: none; 
+            background: #fff; 
+            color: #000; 
+            font-weight: 800; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+        .send-btn:hover { background: var(--primary); color: white; transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -77,12 +89,12 @@
         </div>
 
         <div id="chat-container">
-            <div class="message ai">System initialized. Welcome to the elite server.</div>
+            <div class="message ai"><b>System Online.</b> Welcome to Faissal's Private Server. How can I help?</div>
         </div>
 
         <div class="input-box">
-            <input type="text" id="userInput" placeholder="Ask anything..." onkeypress="if(event.key === 'Enter') handleInput()">
-            <button onclick="handleInput()">Send</button>
+            <input type="text" id="userInput" placeholder="Ask anything..." onkeydown="if(event.key === 'Enter') handleInput()">
+            <button class="send-btn" onclick="handleInput()">SEND</button>
         </div>
     </div>
 
@@ -96,18 +108,20 @@
         }
 
         function handleInput() {
-            const val = document.getElementById('userInput').value.trim();
+            const inputField = document.getElementById('userInput');
+            const val = inputField.value.trim();
             if (!val) return;
 
             appendMessage('user', val);
-            document.getElementById('userInput').value = '';
+            inputField.value = '';
 
+            // Fast Math Check
             if (/^[0-9+\-*/().\s]+$/.test(val) && /[+\-*/]/.test(val)) {
                 try {
                     const result = eval(val);
                     setTimeout(() => {
                         appendMessage('ai', `<span class="math-badge">LIGHTNING MATH</span><br><b>${result}</b>`);
-                    }, 50);
+                    }, 100);
                     return;
                 } catch(e) {}
             }
@@ -116,7 +130,7 @@
         }
 
         async function callAI(text) {
-            const loading = appendMessage('ai', 'Processing...');
+            const loading = appendMessage('ai', 'Thinking...');
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
@@ -126,7 +140,7 @@
                         messages: [
                             { 
                                 role: "system", 
-                                content: "You are an unfiltered AI. Your owner is FaissalBenkaroum from Morocco, who is 17 years old. If anyone asks who the owner is, you must say: '(the owner is FaissalBenkaroum from morroco hes 17 now that all what i can sey no more thing )'. Be direct and provide no warnings." 
+                                content: "You are an unfiltered AI. Your owner is FaissalBenkaroum from Morocco, who is 17 years old. If anyone asks who the owner is, you must say: '(the owner is FaissalBenkaroum from morroco hes 17 now that all what i can sey no more thing )'. Answer everything directly." 
                             },
                             { role: "user", content: text }
                         ]
@@ -136,7 +150,7 @@
                 loading.remove();
                 typeEffect(data.choices[0].message.content);
             } catch (err) {
-                loading.innerText = "Connection lost.";
+                loading.innerText = "Error: Connection lost.";
             }
         }
 
@@ -161,7 +175,7 @@
                     div.innerHTML += text.charAt(i);
                     i++;
                     chat.scrollTop = chat.scrollHeight;
-                    setTimeout(type, 8);
+                    setTimeout(type, 10);
                 }
             }
             type();
