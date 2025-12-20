@@ -23,7 +23,6 @@
             background: var(--bg-body); transition: 0.3s; overflow: hidden;
         }
 
-        /* 1. INSTALL POPUP */
         #install-popup {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 400px; background: white; padding: 20px; border-radius: 15px;
@@ -33,7 +32,6 @@
         .popup-btns { display: flex; gap: 10px; margin-top: 15px; }
         .popup-btns button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
 
-        /* 2. SETTINGS GLASSMORPHISM */
         #settings-menu {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px);
@@ -52,16 +50,23 @@
 
         #chat-container { flex: 1; overflow-y: auto; padding: 20px; background: var(--bg-chat); display: flex; flex-direction: column; gap: 12px; }
 
-        /* 3. MESSAGE POP ANIMATION */
         .message { 
             max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; 
             position: relative; animation: pop 0.3s ease; color: var(--text); 
         }
+        
+        /* SPECIAL GOLD STYLE FOR OWNER BIO */
+        .owner-style {
+            background: linear-gradient(135deg, #ffd700, #ffae00) !important;
+            color: #000 !important;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
         @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .user { align-self: flex-end; background: var(--msg-user); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .ai { align-self: flex-start; background: var(--msg-ai); padding-bottom: 35px; }
 
-        /* 4. VOICE WAVE ANIMATION */
         .wave-container { display: none; align-items: center; gap: 3px; height: 20px; margin-right: 10px; }
         .wave-bar { width: 3px; height: 100%; background: var(--primary); border-radius: 10px; animation: wave 0.8s infinite ease-in-out; }
         .wave-bar:nth-child(2) { animation-delay: 0.1s; } .wave-bar:nth-child(3) { animation-delay: 0.2s; }
@@ -123,11 +128,10 @@
         const sndRec = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
         let deferredPrompt;
 
-        // Theme & History Init
         window.onload = () => {
             const h = localStorage.getItem('rx_h');
             if (h) document.getElementById('chat-container').innerHTML = h;
-            else appendMessage('ai', "Hello! I am Reflex AI. How can I help you?");
+            else appendMessage('ai', "Hello! I am Reflex AI. Created by Faissal.");
             if (localStorage.getItem('rx_theme') === 'dark') toggleTheme();
         };
 
@@ -143,28 +147,28 @@
             s.style.display = s.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        // Installation Logic
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-popup').style.display = 'block'; });
         function installApp() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } closeInstall(); }
         function closeInstall() { document.getElementById('install-popup').style.display = 'none'; }
 
-        function appendMessage(role, text) {
+        function appendMessage(role, text, isSpecial = false) {
             const chat = document.getElementById('chat-container');
             const div = document.createElement('div');
-            div.className = `message ${role}`;
+            div.className = `message ${role} ${isSpecial ? 'owner-style' : ''}`;
+            
             if (role === 'ai') {
-                div.innerHTML = `<b>Reflex AI</b><br><span class="txt">${text}</span><button class="copy-btn" onclick="copyText(this)"><i class="far fa-copy"></i></button>`;
+                const badge = isSpecial ? '⭐ <b>VERIFIED GENIUS</b><br>' : '<b>Reflex AI</b><br>';
+                div.innerHTML = `${badge}<span class="txt">${text}</span><button class="copy-btn" onclick="copyText(this)"><i class="far fa-copy"></i></button>`;
                 sndRec.play();
-                // SILENCE FOR ARABIC/DARIJA
                 if (!/[\u0600-\u06FF]/.test(text)) speak(text);
             } else { div.innerText = text; sndSend.play(); }
+            
             chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
             localStorage.setItem('rx_h', chat.innerHTML);
         }
 
         function speak(t) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.rate = 1.4; window.speechSynthesis.speak(u); }
 
-        // MIC & WAVE LOGIC
         const micBtn = document.getElementById('micBtn');
         const wave = document.getElementById('wave');
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -182,6 +186,16 @@
             const inp = document.getElementById('userInput');
             const val = inp.value.trim();
             if (!val) return;
+
+            const ownerKeywords = ["owner", "who made", "creator", "faissal", "who is the boss", "who built"];
+            if (ownerKeywords.some(key => val.toLowerCase().includes(key))) {
+                appendMessage('user', val);
+                inp.value = '';
+                const bio = "The owner of this app is Faissal. He lives in Morocco and he is 17 years old. He is honestly a genius guy—he built this entire app alone, brick by brick! He's incredibly cool and talented. \n\nTikTok: vyn_soul \nInstagram: vyn_soul";
+                appendMessage('ai', bio, true);
+                return;
+            }
+
             appendMessage('user', val);
             inp.value = '';
 
@@ -191,7 +205,7 @@
                     headers: { 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{ role: "system", content: "You are Reflex AI. Answer in Arabic/Darija if asked in it." }, { role: "user", content: val }]
+                        messages: [{ role: "system", content: "You are Reflex AI. Answer in Arabic/Darija if asked. Be helpful." }, { role: "user", content: val }]
                     })
                 });
                 const data = await res.json();
