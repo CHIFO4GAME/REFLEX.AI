@@ -14,7 +14,6 @@
             --border: rgba(255, 255, 255, 0.1);
         }
 
-        /* 1. BLACK & GREY WAVE BACKGROUND */
         body { 
             font-family: 'Segoe UI', sans-serif; 
             margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
@@ -30,7 +29,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* 2. SMOOTH SLIDE-UP OPENING ANIMATION */
         .app-container {
             width: 95%; max-width: 900px; height: 85vh;
             background: var(--glass); backdrop-filter: blur(30px);
@@ -41,79 +39,109 @@
         }
 
         @keyframes smoothEntry {
-            from { opacity: 0; transform: translateY(100px); filter: grayscale(1); }
-            to { opacity: 1; transform: translateY(0); filter: grayscale(0); }
+            from { opacity: 0; transform: translateY(100px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); }
-        .logo { font-weight: 900; font-size: 20px; color: white; }
-
-        /* CIRCULAR ICONS */
+        
+        /* CIRCULAR BUTTONS & ANIMATIONS */
         .circle-btn {
             width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border);
             background: rgba(255,255,255,0.1); color: white; cursor: pointer;
             display: flex; align-items: center; justify-content: center; transition: 0.3s;
         }
-        .circle-btn:hover { background: rgba(255,255,255,0.2); }
-        .btn-gold { color: #ffd700; border-color: #ffd700; }
 
-        /* SETTINGS OVERLAY */
+        .settings-icon-anim { transition: transform 0.5s ease; }
+        .settings-icon-anim:active { transform: rotate(90deg); }
+
+        .send-anim:active { transform: scale(0.8) translateX(10px); transition: 0.2s; }
+
+        /* SETTINGS FORM */
         #settings-menu {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 100; display: none; padding: 30px;
-            box-sizing: border-box; flex-direction: column; gap: 15px;
+            background: #000; z-index: 100; display: none; padding: 25px;
+            box-sizing: border-box; flex-direction: column; gap: 12px; overflow-y: auto;
         }
-        .settings-item { background: #111; padding: 15px; border-radius: 12px; border: 1px solid #222; }
-        .settings-item label { display: block; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-        .settings-item span { color: white; font-weight: bold; }
+        
+        .settings-input-group { background: #111; padding: 12px; border-radius: 12px; border: 1px solid #222; }
+        .settings-input-group label { display: block; font-size: 10px; color: #8b5cf6; font-weight: bold; margin-bottom: 5px; }
+        .settings-input-group input, .settings-input-group select { 
+            width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 14px; 
+        }
+
+        .save-btn {
+            background: #fff; color: #000; border: none; padding: 15px; border-radius: 12px;
+            font-weight: 900; cursor: pointer; margin-top: 10px; transition: 0.3s;
+        }
+        .save-btn:active { transform: scale(0.95); background: #8b5cf6; color: white; }
 
         #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .message { max-width: 80%; padding: 12px 18px; border-radius: 18px; font-size: 15px; line-height: 1.4; }
+        .message { max-width: 80%; padding: 12px 18px; border-radius: 18px; font-size: 15px; }
         .user { align-self: flex-end; background: #fff; color: #000; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; background: #222; border: 1px solid #333; color: #eee; border-bottom-left-radius: 2px; }
+        .ai { align-self: flex-start; background: #222; color: #eee; border-bottom-left-radius: 2px; border: 1px solid #333; }
 
-        /* PERFECT CIRCLE MIC & STOP */
         .input-box { padding: 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.5); align-items: center; }
-        input { flex: 1; padding: 14px; border-radius: 25px; border: 1px solid #333; background: #111; color: white; outline: none; }
+        input#userInput { flex: 1; padding: 14px; border-radius: 25px; border: 1px solid #333; background: #111; color: white; outline: none; }
         
         #stopBtn { display: none; background: #ff4444; border: none; }
-        .mic-active { background: #ff4444 !important; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); } 100% { box-shadow: 0 0 0 15px rgba(255, 68, 68, 0); } }
     </style>
 </head>
 <body>
 
     <div class="app-container">
         <div id="settings-menu">
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                 <button class="circle-btn" onclick="toggleSettings()"><i class="fas fa-arrow-left"></i></button>
-                <h2 style="color: white; margin: 0;">Settings</h2>
+                <h2 style="color: white; margin: 0;">Profile Settings</h2>
             </div>
-            <div class="settings-item"><label>Region</label><span>Africa</span></div>
-            <div class="settings-item"><label>Country</label><span>Morocco 🇲🇦</span></div>
-            <div class="settings-item"><label>User Name</label><span>Faissal</span></div>
-            <div class="settings-item"><label>Gmail</label><span>user@gmail.com</span></div>
-            <div class="settings-item"><label>Phone Number</label><span>+212 ••••••••</span></div>
-            <button class="settings-item" style="background: var(--gold-gradient); color: black; font-weight: 900; width: 100%; border: none; margin-top: 10px; cursor: pointer;">SUBSCRIBE PRO</button>
+            
+            <div class="settings-input-group">
+                <label>USER NAME</label>
+                <input type="text" id="setName" placeholder="Enter your name">
+            </div>
+            <div class="settings-input-group">
+                <label>GMAIL</label>
+                <input type="email" id="setEmail" placeholder="example@gmail.com">
+            </div>
+            <div class="settings-input-group">
+                <label>PHONE NUMBER</label>
+                <input type="tel" id="setPhone" placeholder="+212 ...">
+            </div>
+            <div class="settings-input-group">
+                <label>REGION</label>
+                <select id="setRegion">
+                    <option value="Africa">Africa</option>
+                    <option value="Asia">Asia</option>
+                    <option value="Europe">Europe</option>
+                    <option value="North America">North America</option>
+                    <option value="South America">South America</option>
+                    <option value="Oceania">Oceania</option>
+                    <option value="Middle East">Middle East</option>
+                </select>
+            </div>
+            
+            <button class="save-btn" onclick="saveUserData()">SAVE INFORMATION</button>
+            <button class="save-btn" style="background: #ffd700; margin-top: 5px;">SUBSCRIBE TO PRO</button>
         </div>
 
         <div class="header">
             <div class="logo">REFLEX<span style="color:var(--primary)">.AI</span></div>
             <div style="display: flex; gap: 10px;">
-                <button class="circle-btn btn-gold" onclick="alert('Subscribe to Pro!')"><i class="fas fa-crown"></i></button>
-                <button class="circle-btn" onclick="toggleSettings()"><i class="fas fa-cog"></i></button>
+                <button class="circle-btn" style="color:#ffd700; border-color:#ffd700;"><i class="fas fa-crown"></i></button>
+                <button class="circle-btn settings-icon-anim" onclick="toggleSettings()"><i class="fas fa-cog"></i></button>
             </div>
         </div>
 
         <div id="chat-container">
-            <div class="message ai">System Online. How can I help?</div>
+            <div class="message ai" id="welcome-msg">System Online. Hello!</div>
         </div>
 
         <div class="input-box">
             <button id="stopBtn" class="circle-btn" onclick="stopAI()"><i class="fas fa-stop"></i></button>
             <button id="micBtn" class="circle-btn"><i class="fas fa-microphone"></i></button>
             <input type="text" id="userInput" placeholder="Ask Reflex...">
-            <button class="circle-btn" style="background: #fff; color: #000;" onclick="handleInput()"><i class="fas fa-paper-plane"></i></button>
+            <button class="circle-btn send-anim" style="background: #fff; color: #000;" onclick="handleInput()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -122,34 +150,49 @@
         const micBtn = document.getElementById('micBtn');
         const stopBtn = document.getElementById('stopBtn');
         const userInput = document.getElementById('userInput');
-        let currentUtterance = null;
+
+        // Load Saved Data on Startup
+        window.onload = () => {
+            if(localStorage.getItem('reflex_name')) {
+                document.getElementById('setName').value = localStorage.getItem('reflex_name');
+                document.getElementById('setEmail').value = localStorage.getItem('reflex_email');
+                document.getElementById('setPhone').value = localStorage.getItem('reflex_phone');
+                document.getElementById('setRegion').value = localStorage.getItem('reflex_region');
+                document.getElementById('welcome-msg').innerText = `Welcome back, ${localStorage.getItem('reflex_name')}! How can I help?`;
+            }
+        };
+
+        function saveUserData() {
+            localStorage.setItem('reflex_name', document.getElementById('setName').value);
+            localStorage.setItem('reflex_email', document.getElementById('setEmail').value);
+            localStorage.setItem('reflex_phone', document.getElementById('setPhone').value);
+            localStorage.setItem('reflex_region', document.getElementById('setRegion').value);
+            alert("Information Saved Locally! ✅");
+            toggleSettings();
+        }
 
         function toggleSettings() {
             const menu = document.getElementById('settings-menu');
-            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+            const isVisible = menu.style.display === 'flex';
+            menu.style.display = isVisible ? 'none' : 'flex';
         }
 
-        // --- VOICE STOP LOGIC ---
         function stopAI() {
             window.speechSynthesis.cancel();
             stopBtn.style.display = 'none';
             micBtn.style.display = 'flex';
         }
 
-        // --- SPEECH RECOGNITION ---
+        // Speech recognition
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             const recognition = new SpeechRecognition();
-            micBtn.onclick = () => {
-                recognition.start();
-                micBtn.classList.add('mic-active');
-            };
+            micBtn.onclick = () => { recognition.start(); micBtn.style.background = '#ff4444'; };
             recognition.onresult = (e) => {
                 userInput.value = e.results[0][0].transcript;
-                micBtn.classList.remove('mic-active');
+                micBtn.style.background = 'rgba(255,255,255,0.1)';
                 handleInput();
             };
-            recognition.onspeechend = () => micBtn.classList.remove('mic-active');
         }
 
         async function handleInput() {
@@ -166,33 +209,23 @@
                     headers: { 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{ role: "system", content: "You are Reflex AI. Use emojis very sparingly." }, { role: "user", content: val }]
+                        messages: [{ role: "system", content: "You are Reflex AI. Keep emojis to a minimum." }, { role: "user", content: val }]
                     })
                 });
                 const data = await response.json();
                 const aiText = data.choices[0].message.content;
                 loading.remove();
                 appendMessage('ai', aiText);
-                
-                // Speak and Show Stop Button
                 speak(aiText);
             } catch (err) { loading.innerText = "Error."; }
         }
 
         function speak(text) {
             window.speechSynthesis.cancel();
-            currentUtterance = new SpeechSynthesisUtterance(text);
-            
-            currentUtterance.onstart = () => {
-                micBtn.style.display = 'none';
-                stopBtn.style.display = 'flex';
-            };
-            currentUtterance.onend = () => {
-                stopBtn.style.display = 'none';
-                micBtn.style.display = 'flex';
-            };
-            
-            window.speechSynthesis.speak(currentUtterance);
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.onstart = () => { micBtn.style.display = 'none'; stopBtn.style.display = 'flex'; };
+            utter.onend = () => { stopBtn.style.display = 'none'; micBtn.style.display = 'flex'; };
+            window.speechSynthesis.speak(utter);
         }
 
         function appendMessage(role, text) {
