@@ -7,214 +7,221 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #8b5cf6;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --primary: #ff4757;
+            --chat-bg: #f4f4f7;
+            --text-dark: #1d1d1f;
         }
 
         body { 
-            font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; 
-            display: flex; justify-content: center; align-items: center; overflow: hidden;
-            background: linear-gradient(270deg, #000000, #2c2c2c, #000000);
-            background-size: 400% 400%; animation: waveBackground 12s ease infinite;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
+            background: #e5e5e7; /* Light grey outer background */
         }
-
-        @keyframes waveBackground { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .app-container {
-            width: 95%; max-width: 900px; height: 85vh; background: var(--glass); backdrop-filter: blur(30px);
-            border: 1px solid var(--border); border-radius: 30px; display: flex; flex-direction: column; 
-            overflow: hidden; position: relative; animation: smoothEntry 1s ease-out;
+            width: 100%; max-width: 500px; height: 100vh; 
+            background: white; display: flex; flex-direction: column; 
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            animation: slideUp 0.6s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
-        @keyframes smoothEntry { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); }
-        
-        .circle-btn {
-            width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border);
-            background: rgba(255,255,255,0.1); color: white; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: 0.3s; font-size: 16px;
+        /* Header like the image */
+        .header { 
+            padding: 15px 20px; border-bottom: 1px solid #eee; 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: white; position: sticky; top: 0; z-index: 10;
+        }
+        .logo { font-weight: 800; font-size: 18px; letter-spacing: 1px; color: var(--text-dark); }
+        .logo span { color: #ff7f7f; }
+
+        .header-icons { display: flex; gap: 15px; color: #555; font-size: 18px; }
+
+        /* Chat Area */
+        #chat-container { 
+            flex: 1; overflow-y: auto; padding: 20px; 
+            background: var(--chat-bg); display: flex; flex-direction: column; gap: 12px;
         }
 
-        /* PLUS MENU */
-        .plus-menu {
-            position: absolute; bottom: 80px; left: 20px; background: #111; 
-            border: 1px solid var(--border); border-radius: 15px; display: none; 
-            flex-direction: column; gap: 5px; padding: 10px; z-index: 200;
+        .message { 
+            max-width: 75%; padding: 12px 16px; border-radius: 18px; 
+            font-size: 15px; line-height: 1.4; position: relative;
         }
-        .menu-item {
-            background: none; border: none; color: white; padding: 10px 20px; 
-            text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px;
+        .user { align-self: flex-end; background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .ai { align-self: flex-start; background: #e9e9eb; color: #333; }
+
+        /* Bottom Dark Input Bar like the image */
+        .bottom-bar {
+            background: #1c1c1e; padding: 15px 20px; 
+            display: flex; align-items: center; gap: 12px;
         }
 
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .message { max-width: 80%; padding: 12px 18px; border-radius: 18px; font-size: 15px; line-height: 1.4; }
-        .user { align-self: flex-end; background: #fff; color: #000; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; background: #222; color: #eee; border: 1px solid #333; border-bottom-left-radius: 2px; }
+        .input-pill {
+            flex: 1; background: #2c2c2e; border-radius: 25px; 
+            display: flex; align-items: center; padding: 0 15px;
+        }
 
-        .input-box { padding: 15px; display: flex; gap: 8px; background: rgba(0,0,0,0.5); align-items: center; }
-        input#userInput { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #111; color: white; outline: none; }
+        input#userInput {
+            flex: 1; background: transparent; border: none; color: white;
+            padding: 12px 0; outline: none; font-size: 14px;
+        }
 
-        #preview-container { display: none; padding: 10px; background: #111; border-top: 1px solid var(--border); text-align: center; position: relative; }
-        #image-preview { height: 70px; border-radius: 10px; border: 1px solid var(--primary); }
+        .mic-btn {
+            background: transparent; border: none; color: #8e8e93; 
+            font-size: 18px; cursor: pointer; transition: 0.2s;
+        }
+        .mic-btn.active { color: #ff3b30; animation: pulse 1s infinite; }
+        .mic-btn.stop-mode { color: #ff4757; }
 
-        /* SETTINGS */
+        .send-btn {
+            background: #3a3a3c; color: white; border: none; 
+            width: 35px; height: 35px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Settings Slide-over */
         #settings-menu {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 300; display: none; padding: 25px; flex-direction: column; gap: 12px; box-sizing: border-box;
+            background: white; z-index: 100; display: none; padding: 40px 25px;
+            box-sizing: border-box; flex-direction: column; gap: 15px;
         }
-        .setting-field { background: #111; padding: 10px; border-radius: 10px; border: 1px solid #222; color: white; width: 100%; box-sizing: border-box; }
+        .setting-row { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; }
+        .setting-row input { border: none; text-align: right; color: #888; outline: none; font-size: 14px; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="app-container">
         <div id="settings-menu">
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                <button class="circle-btn" onclick="toggleSettings()"><i class="fas fa-arrow-left"></i></button>
-                <h2 style="color:white; margin:0">Settings</h2>
+            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+                <i class="fas fa-arrow-left" onclick="toggleSettings()" style="cursor:pointer"></i>
+                <h2 style="margin:0">Profile</h2>
             </div>
-            <input type="text" id="setName" class="setting-field" placeholder="Full Name">
-            <input type="text" id="setRegion" class="setting-field" placeholder="Region">
-            <input type="text" id="setCountry" class="setting-field" placeholder="Country">
-            <input type="email" id="setEmail" class="setting-field" placeholder="Gmail">
-            <input type="tel" id="setPhone" class="setting-field" placeholder="Phone Number">
-            <button class="setting-field" style="background:white; color:black; font-weight:bold; cursor:pointer;" onclick="saveUserData()">SAVE & BACK</button>
+            <div class="setting-row"><span>Name</span><input type="text" id="setName" placeholder="Faissal"></div>
+            <div class="setting-row"><span>Region</span><input type="text" id="setRegion" placeholder="Africa"></div>
+            <div class="setting-row"><span>Country</span><input type="text" id="setCountry" placeholder="Morocco"></div>
+            <div class="setting-row"><span>Gmail</span><input type="email" id="setEmail" placeholder="user@gmail.com"></div>
+            <div class="setting-row"><span>Phone</span><input type="tel" id="setPhone" placeholder="+212"></div>
+            <button onclick="saveData()" style="margin-top:20px; padding:15px; border-radius:10px; border:none; background:black; color:white; font-weight:bold;">SAVE CHANGES</button>
         </div>
 
         <div class="header">
-            <div class="logo">REFLEX<span style="color:var(--primary)">.AI</span></div>
-            <button class="circle-btn" onclick="toggleSettings()"><i class="fas fa-cog"></i></button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-bars"></i>
+                <div class="logo">REFLEX<span>.AI</span></div>
+            </div>
+            <div class="header-icons">
+                <i class="fas fa-camera"></i>
+                <i class="fas fa-cog" onclick="toggleSettings()" style="cursor:pointer"></i>
+            </div>
         </div>
 
         <div id="chat-container">
-            <div class="message ai" id="welcome-msg">Hello! I'm Reflex. Send me a message or a photo of your exercise. 📚</div>
+            <div class="message ai"><b>Reflex AI</b><br>Hello! I'm ready to help you. Use the mic to talk or stop me anytime.</div>
         </div>
 
-        <div id="preview-container">
-            <img id="image-preview" src="">
-            <button onclick="clearImage()" style="position:absolute; top:5px; right:45%; background:red; color:white; border-radius:50%; border:none; width:20px; height:20px; cursor:pointer;">×</button>
+        <div class="bottom-bar">
+            <div class="input-pill">
+                <input type="text" id="userInput" placeholder="Ask anything...">
+                <button id="micBtn" class="mic-btn"><i class="fas fa-microphone"></i></button>
+            </div>
+            <button class="send-btn" onclick="handleInput()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
         </div>
-
-        <div class="plus-menu" id="plusMenu">
-            <button class="menu-item" onclick="triggerFile('image/*')"><i class="fas fa-image"></i> Gallery</button>
-            <button class="menu-item" onclick="triggerFile('image/*', true)"><i class="fas fa-camera"></i> Camera</button>
-        </div>
-
-        <div class="input-box">
-            <button class="circle-btn" onclick="togglePlusMenu()"><i class="fas fa-plus"></i></button>
-            <button id="micBtn" class="circle-btn"><i class="fas fa-microphone"></i></button>
-            <input type="text" id="userInput" placeholder="Type or ask about image...">
-            <button class="circle-btn" style="background: #fff; color: #000;" onclick="handleInput()"><i class="fas fa-paper-plane"></i></button>
-        </div>
-        <input type="file" id="fileInput" style="display:none" onchange="previewImage(event)">
     </div>
 
     <script>
         const KEY = "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";
-        let selectedImageBase64 = null;
-        let userName = localStorage.getItem('reflex_name') || "";
+        const micBtn = document.getElementById('micBtn');
+        let isSpeaking = false;
 
-        // UI Helpers
-        function togglePlusMenu() { const m = document.getElementById('plusMenu'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
-        function toggleSettings() { const s = document.getElementById('settings-menu'); s.style.display = s.style.display === 'flex' ? 'none' : 'flex'; }
-        
-        function saveUserData() {
-            localStorage.setItem('reflex_name', document.getElementById('setName').value);
-            localStorage.setItem('reflex_email', document.getElementById('setEmail').value);
-            userName = document.getElementById('setName').value;
-            alert("Profile Updated!");
+        function toggleSettings() {
+            const m = document.getElementById('settings-menu');
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function saveData() {
+            localStorage.setItem('refName', document.getElementById('setName').value);
+            alert("Settings Saved!");
             toggleSettings();
         }
 
-        function triggerFile(type, useCamera = false) {
-            const input = document.getElementById('fileInput');
-            input.setAttribute('accept', type);
-            if(useCamera) input.setAttribute('capture', 'environment');
-            else input.removeAttribute('capture');
-            input.click();
-            togglePlusMenu();
-        }
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                selectedImageBase64 = e.target.result;
-                document.getElementById('image-preview').src = selectedImageBase64;
-                document.getElementById('preview-container').style.display = 'block';
+        // Voice and Stop Logic
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.onstart = () => {
+                isSpeaking = true;
+                micBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
+                micBtn.classList.add('stop-mode');
             };
-            reader.readAsDataURL(file);
+            utter.onend = () => {
+                isSpeaking = false;
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                micBtn.classList.remove('stop-mode');
+            };
+            window.speechSynthesis.speak(utter);
         }
 
-        function clearImage() { selectedImageBase64 = null; document.getElementById('preview-container').style.display = 'none'; }
+        // Mic Button Action
+        micBtn.onclick = () => {
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                micBtn.classList.remove('stop-mode');
+            } else {
+                startListening();
+            }
+        };
 
-        // Speech Recognition
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
+        function startListening() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return alert("Speech not supported");
+            
             const recognition = new SpeechRecognition();
-            document.getElementById('micBtn').onclick = () => { recognition.start(); document.getElementById('micBtn').style.color = "red"; };
+            recognition.onstart = () => micBtn.classList.add('active');
             recognition.onresult = (e) => {
                 document.getElementById('userInput').value = e.results[0][0].transcript;
-                document.getElementById('micBtn').style.color = "white";
                 handleInput();
             };
+            recognition.onend = () => micBtn.classList.remove('active');
+            recognition.start();
         }
 
         async function handleInput() {
-            const text = document.getElementById('userInput').value.trim();
-            if (!text && !selectedImageBase64) return;
-
-            appendMessage('user', text + (selectedImageBase64 ? "<br><small>(Image attached)</small>" : ""));
+            const val = document.getElementById('userInput').value.trim();
+            if (!val) return;
+            appendMessage('user', val);
             document.getElementById('userInput').value = '';
-            const loading = appendMessage('ai', 'Thinking... 🌀');
 
             try {
-                // If image exists, use Vision model. Else use Versatile model.
-                const model = selectedImageBase64 ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile";
-                
-                const body = {
-                    model: model,
-                    messages: [
-                        { role: "system", content: `You are Reflex AI. Be human-like and friendly. User's name is ${userName}. If an image of an exercise is provided, solve it step-by-step.` },
-                        { 
-                            role: "user", 
-                            content: selectedImageBase64 ? [
-                                { type: "text", text: text || "What is in this image? Please solve if it's an exercise." },
-                                { type: "image_url", image_url: { url: selectedImageBase64 } }
-                            ] : text
-                        }
-                    ]
-                };
-
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{ role: "system", content: "You are Reflex AI. Friendly and human-like." }, { role: "user", content: val }]
+                    })
                 });
-                
                 const data = await response.json();
                 const aiText = data.choices[0].message.content;
-                loading.remove();
                 appendMessage('ai', aiText);
-                
-                // Voice Response
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance(aiText));
-                clearImage();
-
-            } catch (err) { loading.innerText = "Error connecting to AI."; }
+                speak(aiText);
+            } catch (e) { appendMessage('ai', "Error."); }
         }
 
         function appendMessage(role, text) {
             const chat = document.getElementById('chat-container');
             const div = document.createElement('div');
             div.className = `message ${role}`;
-            div.innerHTML = text;
+            div.innerHTML = role === 'ai' ? `<b>Reflex AI</b><br>${text}` : text;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
-            return div;
         }
     </script>
 </body>
