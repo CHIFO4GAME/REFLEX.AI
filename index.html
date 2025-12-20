@@ -4,63 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reflex AI</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --bg-body: #e5e5e7; --bg-app: #fff; --bg-chat: #f4f4f7; --text: #1d1d1f; --msg-user: #fff; --msg-ai: #e9e9eb; --primary: #ff4757; --input-bg: #1c1c1e; }
-        [data-theme="dark"] { --bg-body: #000; --bg-app: #121212; --bg-chat: #1c1c1e; --text: #fff; --msg-user: #2c2c2e; --msg-ai: #3a3a3c; --input-bg: #000; }
-        
-        body { font-family: -apple-system, sans-serif; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: var(--bg-body); transition: 0.3s; overflow: hidden; }
-        .app-container { width: 100%; max-width: 500px; height: 100vh; background: var(--bg-app); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
-        
-        .header { padding: 15px 20px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background: var(--bg-app); }
-        .logo { font-weight: 800; color: var(--text); }
+        :root {
+            --bg-body: #e5e5e7;
+            --bg-app: #ffffff;
+            --bg-chat: #f4f4f7;
+            --text-main: #1d1d1f;
+            --msg-user: #ffffff;
+            --msg-ai: #e9e9eb;
+            --primary: #ff4757;
+            --input-bg: #1c1c1e;
+            --input-pill: #2c2c2e;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #000000;
+            --bg-app: #121212;
+            --bg-chat: #1c1c1e;
+            --text-main: #ffffff;
+            --msg-user: #2c2c2e;
+            --msg-ai: #3a3a3c;
+            --input-bg: #000000;
+            --input-pill: #1c1c1e;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
+            background: var(--bg-body); transition: 0.3s; overflow: hidden;
+        }
+
+        /* INSTALL POPUP */
+        #install-popup {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: white; 
+            padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000; display: none; text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { top: -100px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        .popup-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .popup-btns button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-yes { background: black; color: white; }
+        .btn-no { background: #eee; color: #555; }
+
+        /* SETTINGS GLASSMORPHISM */
+        #settings-menu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px);
+            z-index: 100; display: none; padding: 40px 25px; box-sizing: border-box; flex-direction: column;
+        }
+        [data-theme="dark"] #settings-menu { background: rgba(0,0,0,0.7); }
+
+        .app-container {
+            width: 100%; max-width: 500px; height: 100vh; 
+            background: var(--bg-app); display: flex; flex-direction: column; 
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
+        .header { 
+            padding: 15px 20px; border-bottom: 1px solid rgba(0,0,0,0.1); 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: var(--bg-app);
+        }
+        .logo { font-weight: 800; font-size: 18px; letter-spacing: 1px; color: var(--text-main); }
         .logo span { color: var(--primary); }
 
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; background: var(--bg-chat); display: flex; flex-direction: column; gap: 12px; }
-        .message { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; position: relative; animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--text); }
-        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .header-icons { display: flex; gap: 12px; align-items: center; }
+        .toggle-short {
+            font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px;
+            border: 1px solid #ddd; cursor: pointer; transition: 0.3s; color: var(--text-main);
+        }
+        .toggle-short.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #chat-container { 
+            flex: 1; overflow-y: auto; padding: 20px; 
+            background: var(--bg-chat); display: flex; flex-direction: column; gap: 12px;
+        }
+
+        /* MESSAGES POP ANIMATION */
+        .message { 
+            max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; 
+            position: relative; animation: msgPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: var(--text-main);
+        }
+        @keyframes msgPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         .user { align-self: flex-end; background: var(--msg-user); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .ai { align-self: flex-start; background: var(--msg-ai); padding-bottom: 35px; }
 
-        .copy-btn { position: absolute; bottom: 8px; right: 12px; font-size: 12px; color: #8e8e93; background: none; border: none; cursor: pointer; }
-        .bottom-bar { background: var(--input-bg); padding: 15px 20px; display: flex; align-items: center; gap: 12px; }
-        .input-pill { flex: 1; background: #2c2c2e; border-radius: 25px; display: flex; align-items: center; padding: 0 15px; }
-        input { flex: 1; background: transparent; border: none; color: white; padding: 12px 0; outline: none; }
-        
-        button { background: transparent; border: none; color: #8e8e93; font-size: 18px; cursor: pointer; }
-        .active-mic { color: var(--primary) !important; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        .copy-btn { position: absolute; bottom: 8px; right: 12px; font-size: 12px; color: #8e8e93; cursor: pointer; background: none; border: none; }
 
-        #settings-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); z-index: 100; display: none; padding: 40px 25px; flex-direction: column; box-sizing: border-box; }
-        [data-theme="dark"] #settings-menu { background: rgba(0,0,0,0.7); }
+        /* TYPING INDICATOR */
+        .typing { display: flex; gap: 4px; padding: 10px; align-self: flex-start; }
+        .dot { width: 6px; height: 6px; background: #8e8e93; border-radius: 50%; animation: blink 1.4s infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        .bottom-bar { background: var(--input-bg); padding: 15px 20px; display: flex; align-items: center; gap: 12px; }
+        .input-pill { flex: 1; background: var(--input-pill); border-radius: 25px; display: flex; align-items: center; padding: 0 15px; }
+        input#userInput { flex: 1; background: transparent; border: none; color: white; padding: 12px 0; outline: none; }
+
+        .mic-btn, .theme-btn { background: transparent; border: none; color: #8e8e93; font-size: 18px; cursor: pointer; }
+        .mic-btn.active { color: var(--primary); animation: blink 1s infinite; }
+        .send-btn { background: #3a3a3c; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body data-theme="light">
 
+    <div id="install-popup">
+        <h3>Install Reflex AI?</h3>
+        <p>Would you like to install this app on your phone for better access?</p>
+        <div class="popup-btns">
+            <button class="btn-yes" id="installYes">Yes</button>
+            <button class="btn-no" id="installNo">No</button>
+        </div>
+    </div>
+
     <div id="settings-menu">
-        <h2 style="color:var(--text)">Settings</h2>
-        <button onclick="localStorage.removeItem('rx_hist'); location.reload();" style="background:var(--primary); color:white; padding:10px; border-radius:10px;">Clear History</button>
-        <button onclick="toggleSettings()" style="margin-top:10px; color:var(--text)">Close</button>
+        <h2 style="color:var(--text-main)">Profile & Settings</h2>
+        <button onclick="clearHistory()" style="background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; cursor:pointer;">Clear Chat History</button>
+        <button onclick="toggleSettings()" style="margin-top:20px; background:none; border:none; color:var(--text-main); cursor:pointer;">Close</button>
     </div>
 
     <div class="app-container">
         <div class="header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-bars" onclick="toggleSettings()" style="color:var(--text)"></i>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-bars" onclick="toggleSettings()" style="color:var(--text-main); cursor:pointer"></i>
                 <div class="logo">REFLEX<span>.AI</span></div>
             </div>
-            <div>
-                <button onclick="toggleTheme()"><i id="tIcon" class="fas fa-moon"></i></button>
-                <i class="fas fa-cog" onclick="toggleSettings()" style="color:var(--text); margin-left:10px"></i>
+            <div class="header-icons">
+                <button class="theme-btn" onclick="toggleTheme()"><i id="tIcon" class="fas fa-moon"></i></button>
+                <div id="shortBtn" class="toggle-short" onclick="toggleShort()">SHORT OFF</div>
+                <i class="fas fa-cog" onclick="toggleSettings()" style="color:var(--text-main); cursor:pointer"></i>
             </div>
         </div>
+
         <div id="chat-container"></div>
+
         <div class="bottom-bar">
             <div class="input-pill">
-                <input type="text" id="userInput" placeholder="Type or use Mic...">
-                <button id="micBtn"><i class="fas fa-microphone"></i></button>
+                <input type="text" id="userInput" placeholder="Ask anything...">
+                <button id="micBtn" class="mic-btn"><i class="fas fa-microphone"></i></button>
             </div>
-            <button style="color:white" onclick="handleInput()"><i class="fas fa-paper-plane"></i></button>
+            <button class="send-btn" onclick="handleInput()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
         </div>
     </div>
 
@@ -68,47 +160,70 @@
         const KEY = "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";
         const sndSend = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
         const sndRec = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+        
+        let isSpeaking = false;
+        let shortMode = false;
+        let deferredPrompt;
+
+        // PWA & Theme Init
+        window.onload = () => {
+            const hist = localStorage.getItem('rx_history');
+            if (hist) document.getElementById('chat-container').innerHTML = hist;
+            else appendMessage('ai', "Welcome! Ask me anything in English or Darija.");
+            
+            if (localStorage.getItem('theme') === 'dark') toggleTheme();
+        };
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('install-popup').style.display = 'block';
+        });
+
+        document.getElementById('installYes').onclick = async () => {
+            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+            document.getElementById('install-popup').style.display = 'none';
+        };
+        document.getElementById('installNo').onclick = () => document.getElementById('install-popup').style.display = 'none';
 
         function toggleTheme() {
             const isD = document.body.getAttribute('data-theme') === 'dark';
             document.body.setAttribute('data-theme', isD ? 'light' : 'dark');
             document.getElementById('tIcon').className = isD ? 'fas fa-moon' : 'fas fa-sun';
-        }
-        function toggleSettings() { const s = document.getElementById('settings-menu'); s.style.display = s.style.display === 'flex' ? 'none' : 'flex'; }
-
-        function appendMessage(role, text) {
-            const chat = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `message ${role}`;
-            if (role === 'ai') {
-                div.innerHTML = `<b>Reflex AI</b><br><span class="txt">${text}</span><button class="copy-btn" onclick="copy(this)"><i class="far fa-copy"></i></button>`;
-                sndRec.play();
-                // ONLY READ IF NO ARABIC CHARACTERS
-                if (!/[\u0600-\u06FF]/.test(text)) speak(text);
-            } else {
-                div.innerText = text;
-                sndSend.play();
-            }
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-            localStorage.setItem('rx_hist', chat.innerHTML);
+            localStorage.setItem('theme', isD ? 'light' : 'dark');
         }
 
-        function speak(t) {
+        function toggleSettings() {
+            const s = document.getElementById('settings-menu');
+            s.style.display = s.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function clearHistory() { localStorage.removeItem('rx_history'); location.reload(); }
+
+        function toggleShort() {
+            shortMode = !shortMode;
+            document.getElementById('shortBtn').innerText = `SHORT ${shortMode ? 'ON' : 'OFF'}`;
+            document.getElementById('shortBtn').classList.toggle('active');
+        }
+
+        function speak(text) {
             window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(t);
-            u.rate = 1.4;
-            window.speechSynthesis.speak(u);
+            // Arabic Detection Logic: If text contains Arabic characters, do not speak.
+            if (/[\u0600-\u06FF]/.test(text)) return;
+
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.4;
+            utter.onstart = () => isSpeaking = true;
+            utter.onend = () => isSpeaking = false;
+            window.speechSynthesis.speak(utter);
         }
 
-        // MIC LOGIC
         const micBtn = document.getElementById('micBtn');
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (Speech) {
             const rec = new Speech();
-            rec.lang = 'ar-MA'; // Supports Darija & Arabic best
-            rec.onstart = () => micBtn.classList.add('active-mic');
-            rec.onend = () => micBtn.classList.remove('active-mic');
+            rec.lang = 'ar-MA';
+            rec.onstart = () => micBtn.classList.add('active');
+            rec.onend = () => micBtn.classList.remove('active');
             rec.onresult = (e) => { document.getElementById('userInput').value = e.results[0][0].transcript; handleInput(); };
             micBtn.onclick = () => { if(window.speechSynthesis.speaking) window.speechSynthesis.cancel(); else rec.start(); };
         }
@@ -117,21 +232,57 @@
             const inp = document.getElementById('userInput');
             const val = inp.value.trim();
             if (!val) return;
+
             appendMessage('user', val);
             inp.value = '';
 
+            // Thinking Indicator
+            const typing = document.createElement('div');
+            typing.className = 'typing';
+            typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+            document.getElementById('chat-container').appendChild(typing);
+
+            if (val.toLowerCase().includes("owner") || val.toLowerCase().includes("creator")) {
+                typing.remove();
+                const info = `<b>Faissal benkaroum</b> is the owner of this app. He is 17 years old, lives in Marrakech, and is a student. <br>Socials: vyn_soul`;
+                appendMessage('ai', info);
+                return;
+            }
+
             try {
+                let sys = "You are Reflex AI. Answer in Arabic/Darija if asked in it.";
+                if (shortMode) sys += " Max 1 short sentence.";
+
                 const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{ role: "system", content: "You are Reflex AI. If user speaks Darija/Arabic, answer in Arabic. Do not use latin for Arabic." }, { role: "user", content: val }]
+                        messages: [{ role: "system", content: sys }, { role: "user", content: val }]
                     })
                 });
                 const data = await res.json();
-                appendMessage('ai', data.choices[0].message.content);
-            } catch (e) { appendMessage('ai', "Error."); }
+                typing.remove();
+                const aiMsg = data.choices[0].message.content;
+                appendMessage('ai', aiMsg);
+                speak(aiMsg);
+            } catch (e) { typing.remove(); appendMessage('ai', "Connection error."); }
+        }
+
+        function appendMessage(role, text) {
+            const chat = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            if (role === 'ai') {
+                div.innerHTML = `<b>Reflex AI</b><br><span class="txt">${text}</span><button class="copy-btn" onclick="copy(this)"><i class="far fa-copy"></i></button>`;
+                sndRec.play();
+            } else {
+                div.innerText = text;
+                sndSend.play();
+            }
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            localStorage.setItem('rx_history', chat.innerHTML);
         }
 
         function copy(btn) {
@@ -139,12 +290,6 @@
             btn.innerHTML = '<i class="fas fa-check"></i>';
             setTimeout(() => btn.innerHTML = '<i class="far fa-copy"></i>', 2000);
         }
-
-        window.onload = () => {
-            const h = localStorage.getItem('rx_hist');
-            if (h) document.getElementById('chat-container').innerHTML = h;
-            else appendMessage('ai', "Hello! Marhaba! How can I help?");
-        };
     </script>
 </body>
 </html>
